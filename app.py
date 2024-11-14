@@ -46,10 +46,11 @@ def add():
         return '{"Result":"Success"}'
     return render_template('add.html')
 
-@app.route('/')
+@app.route('/index.html')
 def index():
     return render_template('index.html')
 # Default - Show Data
+@app.route('/')
 def hello():
     cur = mysql.cursor()
     cur.execute('''SELECT * FROM students''')
