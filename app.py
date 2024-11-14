@@ -2,6 +2,24 @@ from flask import Flask, render_template, request
 import mysql.connector
 from flask_cors import CORS
 import json
+from logging.config import dictConfig
+
+# Configure logging
+dictConfig({
+    'version': 1,
+    'formatters': {'default': {
+        'format': '[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+    }},
+    'handlers': {'wsgi': {
+        'class': 'logging.StreamHandler',
+        'stream': 'ext://flask.logging.wsgi_errors_stream',
+        'formatter': 'default'
+    }},
+    'root': {
+        'level': 'INFO',
+        'handlers': ['wsgi']
+    }
+})
 
 # MySQL configuration
 mysql = mysql.connector.connect(
@@ -19,23 +37,24 @@ def add():
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
+        print(name, email)
         cur = mysql.cursor()
-        s = '''INSERT INTO students (studentName, email) VALUES ('{}', '{}');'''.format(name, email)
+        s = '''INSERT INTO students(studentName, email) VALUES('{}', '{}');'''.format(name, email)
+        app.logger.info(s)
         cur.execute(s)
         mysql.commit()
         return '{"Result":"Success"}'
     return render_template('add.html')
 
-@app.route("/")  # Default route to serve index.html
+@app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route("/data")  # Route to return JSON data
+# Default - Show Data
 def hello():
     cur = mysql.cursor()
     cur.execute('''SELECT * FROM students''')
     rv = cur.fetchall()
-    Results = [{'Name': row[0], 'Email': row[1], 'ID': row[2]} for row in rv]
+    Results = [{'Name': row[0].replace('\n', ' '), 'Email': row[1], 'ID': row[2]} for row in rv]
     response = {'Results': Results, 'count': len(Results)}
     return app.response_class(response=json.dumps(response), status=200, mimetype='application/json')
 
