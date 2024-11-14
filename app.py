@@ -14,7 +14,7 @@ mysql = mysql.connector.connect(
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/add", methods=['GET', 'POST']) # Add Student
+@app.route("/add", methods=['GET', 'POST'])  # Add Student
 def add():
     if request.method == 'POST':
         name = request.form['name']
@@ -26,7 +26,11 @@ def add():
         return '{"Result":"Success"}'
     return render_template('add.html')
 
-@app.route("/") # Default - Show Data
+@app.route("/")  # Default route to serve index.html
+def index():
+    return render_template('index.html')
+
+@app.route("/data")  # Route to return JSON data
 def hello():
     cur = mysql.cursor()
     cur.execute('''SELECT * FROM students''')
